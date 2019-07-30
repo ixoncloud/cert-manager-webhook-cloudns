@@ -20,7 +20,6 @@ import (
 	"github.com/go-acme/lego/providers/dns/cloudns"
 	"github.com/jetstack/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
 	"github.com/jetstack/cert-manager/pkg/acme/webhook/cmd"
-	log "github.com/sirupsen/logrus"
 	restclient "k8s.io/client-go/rest"
 	"os"
 )
@@ -31,38 +30,52 @@ var GroupName = os.Getenv("GROUP_NAME")
 
 func main() {
 	if GroupName == "" {
-		log.Fatal("Please set the GROUP_NAME env variable.")
+		panic("Please set the GROUP_NAME env variable.")
 	}
 
+	// Start webhook server
 	cmd.RunWebhookServer(GroupName,
 		&clouDNSProviderSolver{},
 	)
 }
 
+// clouDNSProviderSolver implements webhook.Solver
+// and will allow cert-manager to create & delete
+// DNS TXT records for the DNS01 Challenge
 type clouDNSProviderSolver struct {
-	provider *cloudns.DNSProvider
 }
 
 func (c clouDNSProviderSolver) Name() string {
 	return ProviderName
 }
 
+// Create TXT DNS record for DNS01
 func (c clouDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
-	return c.provider.Present(ch.ResolvedFQDN, "", ch.Key)
-}
-
-func (c clouDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
-	return c.provider.CleanUp(ch.ResolvedFQDN, "", ch.Key)
-}
-
-func (c clouDNSProviderSolver) Initialize(kubeClientConfig *restclient.Config, stopCh <-chan struct{}) error {
+	// Load environment variables and create new ClouDNS api client
 	provider, err := cloudns.NewDNSProvider()
 
 	if err != nil {
 		return err
 	}
 
-	c.provider = provider
+	return provider.Present(ch.ResolvedFQDN, "", ch.Key)
+}
 
+// Delete TXT DNS record for DNS01
+func (c clouDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
+	// Load environment variables and create new ClouDNS api client
+	provider, err := cloudns.NewDNSProvider()
+
+	if err != nil {
+		return err
+	}
+
+	// Remove TXT DNS record
+	return provider.CleanUp(ch.ResolvedFQDN, "", ch.Key)
+}
+
+// Could be used to initialise connections or warm up caches, not needed in this case
+func (c clouDNSProviderSolver) Initialize(kubeClientConfig *restclient.Config, stopCh <-chan struct{}) error {
+	// NOOP
 	return nil
 }
