@@ -1,9 +1,4 @@
-.creds
-.out
-deploy
-scripts
-testdata
-Makefile
-*.md
-*.txt
-.gitignore
+**/**
+!**/*.go
+!go.mod
+!go.sum
