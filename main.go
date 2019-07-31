@@ -17,7 +17,7 @@
 package main
 
 import (
-	"github.com/go-acme/lego/providers/dns/cloudns"
+	"github.com/ixoncloud/cert-manager-webhook-cloudns/cloudns"
 	"github.com/jetstack/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
 	"github.com/jetstack/cert-manager/pkg/acme/webhook/cmd"
 	restclient "k8s.io/client-go/rest"
@@ -51,19 +51,19 @@ func (c clouDNSProviderSolver) Name() string {
 
 // Create TXT DNS record for DNS01
 func (c clouDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
-	// Load environment variables and create new ClouDNS api client
+	// Load environment variables and create new ClouDNS provider
 	provider, err := cloudns.NewDNSProvider()
 
 	if err != nil {
 		return err
 	}
 
-	return provider.Present(ch.ResolvedFQDN, "", ch.Key)
+	return provider.Present(ch.ResolvedFQDN, ch.Key)
 }
 
 // Delete TXT DNS record for DNS01
 func (c clouDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
-	// Load environment variables and create new ClouDNS api client
+	// Load environment variables and create new ClouDNS provider
 	provider, err := cloudns.NewDNSProvider()
 
 	if err != nil {
@@ -71,7 +71,7 @@ func (c clouDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 	}
 
 	// Remove TXT DNS record
-	return provider.CleanUp(ch.ResolvedFQDN, "", ch.Key)
+	return provider.CleanUp(ch.ResolvedFQDN, ch.Key)
 }
 
 // Could be used to initialise connections or warm up caches, not needed in this case
