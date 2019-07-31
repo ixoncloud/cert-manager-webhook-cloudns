@@ -47,12 +47,18 @@ spec:
             - name: certs
               mountPath: /tls
               readOnly: true
+            - name: creds
+              mountPath: {{.Values.clouDNS.credentialsDir}}
+              readOnly: true
           resources:
 {{ toYaml .Values.resources | indent 12 }}
       volumes:
         - name: certs
           secret:
             secretName: {{ include "cert-manager-webhook-cloudns.servingCertificate" . }}
+        - name: creds
+          secret:
+            secretName: {{ .Values.secretName }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}

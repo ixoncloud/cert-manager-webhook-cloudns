@@ -1,6 +1,9 @@
 groupName: acme.ixon.cloud
 clouDNS:
-  credentialsDir: "creds"
+  credentialsDir: "/creds"
+
+secretName: cert-manager-webhook-cloudns-api-secret
+replicaCount: 1
 
 certManager:
   namespace: cert-manager

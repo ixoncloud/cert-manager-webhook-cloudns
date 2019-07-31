@@ -1,0 +1,9 @@
+.creds
+.out
+deploy
+scripts
+testdata
+Makefile
+*.md
+*.txt
+.gitignore
