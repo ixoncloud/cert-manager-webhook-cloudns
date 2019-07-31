@@ -1,4 +1,5 @@
 **/**
-!**/*.go
+!cloudns/
+!*.go
 !go.mod
 !go.sum
