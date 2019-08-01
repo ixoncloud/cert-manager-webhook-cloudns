@@ -11,7 +11,7 @@ certManager:
 
 image:
   repository: ixoncloud/cert-manager-webhook-cloudns
-  tag: latest
+  tag: 1.0.2
   pullPolicy: IfNotPresent
 
 nameOverride: ""
