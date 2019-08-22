@@ -21,10 +21,11 @@ type apiResponse struct {
 }
 
 type Zone struct {
-	Name   string
-	Type   string
-	Zone   string
-	Status string // is an integer, but cast as string
+	Name              string
+	Type              string
+	Zone              string
+	Status            string // is an integer, but cast as string
+	StatusDescription string
 }
 
 // TXTRecord a TXT record
@@ -98,6 +99,11 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 		if err = json.Unmarshal(result, &zone); err != nil {
 			return nil, fmt.Errorf("zone unmarshaling error: %v", err)
 		}
+	}
+
+	// Handle zone info fail
+	if zone.Status == "Failed" {
+		return nil, fmt.Errorf("could not get zone info: %v", zone.StatusDescription)
 	}
 
 	if zone.Name == authZoneName {
