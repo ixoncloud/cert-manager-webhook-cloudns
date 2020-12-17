@@ -1,13 +1,15 @@
 module github.com/ixoncloud/cert-manager-webhook-cloudns
 
-go 1.12
+go 1.13
 
 require (
+	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-acme/lego v2.7.1+incompatible
-	github.com/jetstack/cert-manager v0.9.0
-	github.com/stretchr/testify v1.3.0
-	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+	github.com/jetstack/cert-manager v1.1.0
+	github.com/stretchr/testify v1.6.1
+	gonum.org/v1/netlib v0.0.0-20190331212654-76723241ea4e // indirect
+	k8s.io/apiextensions-apiserver v0.19.0
+	k8s.io/client-go v0.19.0
+	sigs.k8s.io/structured-merge-diff v1.0.1-0.20191108220359-b1b620dd3f06 // indirect
 )
-
-replace k8s.io/client-go => k8s.io/client-go v0.0.0-20190413052642-108c485f896e

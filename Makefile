@@ -1,5 +1,5 @@
 IMAGE_NAME := "ixoncloud/cert-manager-webhook-cloudns"
-IMAGE_TAG := "1.0.3"
+IMAGE_TAG := "1.0.4"
 
 OUT := $(shell pwd)/.out
 
