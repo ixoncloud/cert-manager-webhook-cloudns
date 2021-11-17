@@ -1,6 +1,6 @@
 module github.com/ixoncloud/cert-manager-webhook-cloudns
 
-go 1.12
+go 1.17
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
