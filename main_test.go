@@ -23,8 +23,7 @@ import (
 )
 
 const (
-	KubeBuilderBinPath = "./.out/kubebuilder/bin"
-	ManifestPath       = "testdata"
+	ManifestPath = "testdata"
 )
 
 var (
@@ -37,7 +36,6 @@ func TestRunsSuite(t *testing.T) {
 	// ChallengeRequest passed as part of the test cases.
 
 	fixture := dns.NewFixture(&clouDNSProviderSolver{},
-		dns.SetBinariesPath(KubeBuilderBinPath),
 		dns.SetResolvedZone(zone),
 		dns.SetAllowAmbientCredentials(false),
 		dns.SetManifestPath(ManifestPath),
