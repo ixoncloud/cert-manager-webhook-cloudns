@@ -14,6 +14,7 @@ import (
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	AuthID       string
+	AuthIDType   string
 	AuthPassword string
 	TTL          int
 	HTTPClient   *http.Client
@@ -45,6 +46,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	config := NewDefaultConfig()
+
+	config.AuthIDType = env.GetOrDefaultString("CLOUDNS_AUTH_ID_TYPE", "auth-id")
+	if config.AuthIDType != "auth-id" && config.AuthIDType != "sub-auth-id" {
+		return nil, fmt.Errorf("ClouDNS auth id type is not valid. Expected one of 'auth-id' or 'sub-auth-id' but was: '%s'", config.AuthIDType)
+	}
+
 	config.AuthID = values["CLOUDNS_AUTH_ID"]
 	config.AuthPassword = values["CLOUDNS_AUTH_PASSWORD"]
 
@@ -57,7 +64,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("ClouDNS: the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.AuthID, config.AuthPassword)
+	client, err := internal.NewClient(config.AuthID, config.AuthIDType, config.AuthPassword)
 	if err != nil {
 		return nil, fmt.Errorf("ClouDNS: %v", err)
 	}

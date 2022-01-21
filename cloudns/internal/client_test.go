@@ -59,22 +59,24 @@ func TestClientGetZone(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(handlerMock(http.MethodGet, test.apiResponse))
+		for _, authIDType := range [2]string{"auth-id", "sub-auth-id"} {
+			t.Run(test.desc, func(t *testing.T) {
+				server := httptest.NewServer(handlerMock(http.MethodGet, test.apiResponse))
 
-			client, _ := NewClient("myAuthID", "myAuthPassword")
-			mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
-			client.BaseURL = mockBaseURL
+				client, _ := NewClient("myAuthID", authIDType, "myAuthPassword")
+				mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
+				client.BaseURL = mockBaseURL
 
-			zone, err := client.GetZone(test.authFQDN)
+				zone, err := client.GetZone(test.authFQDN)
 
-			if test.expected.error {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, test.expected.zone, zone)
-			}
-		})
+				if test.expected.error {
+					require.Error(t, err)
+				} else {
+					require.NoError(t, err)
+					assert.Equal(t, test.expected.zone, zone)
+				}
+			})
+		}
 	}
 }
 
@@ -137,31 +139,32 @@ func TestClientFindTxtRecord(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(handlerMock(http.MethodGet, test.apiResponse))
+		for _, authIDType := range [2]string{"auth-id", "sub-auth-id"} {
+			t.Run(test.desc+" (auth type: "+authIDType+")", func(t *testing.T) {
+				server := httptest.NewServer(handlerMock(http.MethodGet, test.apiResponse))
 
-			client, _ := NewClient("myAuthID", "myAuthPassword")
-			mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
-			client.BaseURL = mockBaseURL
+				client, _ := NewClient("myAuthID", authIDType, "myAuthPassword")
+				mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
+				client.BaseURL = mockBaseURL
 
-			txtRecord, err := client.FindTxtRecord(test.zoneName, test.authFQDN)
+				txtRecord, err := client.FindTxtRecord(test.zoneName, test.authFQDN)
 
-			if test.expected.error {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, test.expected.txtRecord, txtRecord)
-			}
-		})
+				if test.expected.error {
+					require.Error(t, err)
+				} else {
+					require.NoError(t, err)
+					assert.Equal(t, test.expected.txtRecord, txtRecord)
+				}
+			})
+		}
 	}
 }
 
 func TestClientAddTxtRecord(t *testing.T) {
 	type expected struct {
-		Query string
-		Error string
+		QueryParams url.Values
+		Error       string
 	}
-
 	testCases := []struct {
 		desc        string
 		zone        *Zone
@@ -184,7 +187,14 @@ func TestClientAddTxtRecord(t *testing.T) {
 			ttl:         60,
 			apiResponse: []byte(`{"status":"Success","statusDescription":"The record was added successfully."}`),
 			expected: expected{
-				Query: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=bar.com&host=_acme-challenge.foo&record=txtTXTtxtTXTtxtTXTtxtTXT&record-type=TXT&ttl=60`,
+				QueryParams: url.Values{
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"bar.com"},
+					"host":          {"_acme-challenge.foo"},
+					"record":        {"txtTXTtxtTXTtxtTXTtxtTXT"},
+					"record-type":   {"TXT"},
+					"ttl":           {"60"},
+				},
 			},
 		},
 		{
@@ -200,7 +210,14 @@ func TestClientAddTxtRecord(t *testing.T) {
 			ttl:         60,
 			apiResponse: []byte(`{"status":"Success","statusDescription":"The record was added successfully."}`),
 			expected: expected{
-				Query: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=bar.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&ttl=60`,
+				QueryParams: url.Values{
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"bar.com"},
+					"host":          {"_acme-challenge"},
+					"record":        {"TXTtxtTXTtxtTXTtxtTXTtxt"},
+					"record-type":   {"TXT"},
+					"ttl":           {"60"},
+				},
 			},
 		},
 		{
@@ -216,32 +233,47 @@ func TestClientAddTxtRecord(t *testing.T) {
 			ttl:         120,
 			apiResponse: []byte(`{"status":"Failed","statusDescription":"Invalid TTL. Choose from the list of the values we support."}`),
 			expected: expected{
-				Query: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=bar.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&ttl=300`,
+				QueryParams: url.Values{
+					"auth-password": {"myAuthPassword"},
+					"domain-name":   {"bar.com"},
+					"host":          {"_acme-challenge"},
+					"record":        {"TXTtxtTXTtxtTXTtxtTXTtxt"},
+					"record-type":   {"TXT"},
+					"ttl":           {"300"},
+				},
 				Error: "fail to add TXT record: Failed Invalid TTL. Choose from the list of the values we support.",
 			},
 		},
 	}
 
 	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-				assert.NotNil(t, req.URL.RawQuery)
-				assert.Equal(t, test.expected.Query, req.URL.RawQuery)
+		for _, authIDType := range [2]string{"auth-id", "sub-auth-id"} {
+			t.Run(test.desc, func(t *testing.T) {
+				server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+					assert.NotNil(t, req.URL.RawQuery)
 
-				handlerMock(http.MethodPost, test.apiResponse).ServeHTTP(rw, req)
-			}))
+					expectedParams := url.Values{}
+					for k, v := range test.expected.QueryParams {
+						expectedParams[k] = v
+					}
+					expectedParams[authIDType] = []string{"myAuthID"}
 
-			client, _ := NewClient("myAuthID", "myAuthPassword")
-			mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
-			client.BaseURL = mockBaseURL
+					assert.Equal(t, expectedParams, req.URL.Query())
+					handlerMock(http.MethodPost, test.apiResponse).ServeHTTP(rw, req)
+				}))
 
-			err := client.AddTxtRecord(test.zone.Name, test.authFQDN, test.value, test.ttl)
+				client, _ := NewClient("myAuthID", authIDType, "myAuthPassword")
+				mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
+				client.BaseURL = mockBaseURL
 
-			if test.expected.Error != "" {
-				require.EqualError(t, err, test.expected.Error)
-			} else {
-				require.NoError(t, err)
-			}
-		})
+				err := client.AddTxtRecord(test.zone.Name, test.authFQDN, test.value, test.ttl)
+
+				if test.expected.Error != "" {
+					require.EqualError(t, err, test.expected.Error)
+				} else {
+					require.NoError(t, err)
+				}
+			})
+		}
 	}
 }

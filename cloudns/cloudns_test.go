@@ -10,6 +10,7 @@ import (
 
 var envTest = tester.NewEnvTest(
 	"CLOUDNS_AUTH_ID",
+	"CLOUDNS_AUTH_ID_TYPE",
 	"CLOUDNS_AUTH_PASSWORD").
 	WithDomain("CLOUDNS_DOMAIN")
 
@@ -20,9 +21,25 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "success",
+			desc: "success default",
 			envVars: map[string]string{
 				"CLOUDNS_AUTH_ID":       "123",
+				"CLOUDNS_AUTH_PASSWORD": "456",
+			},
+		},
+		{
+			desc: "success auth-id",
+			envVars: map[string]string{
+				"CLOUDNS_AUTH_ID":       "123",
+				"CLOUDNS_AUTH_ID_TYPE":  "auth-id",
+				"CLOUDNS_AUTH_PASSWORD": "456",
+			},
+		},
+		{
+			desc: "success sub-auth-id",
+			envVars: map[string]string{
+				"CLOUDNS_AUTH_ID":       "123",
+				"CLOUDNS_AUTH_ID_TYPE":  "sub-auth-id",
 				"CLOUDNS_AUTH_PASSWORD": "456",
 			},
 		},
@@ -49,6 +66,15 @@ func TestNewDNSProvider(t *testing.T) {
 				"CLOUDNS_AUTH_PASSWORD": "",
 			},
 			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_PASSWORD",
+		},
+		{
+			desc: "invalid auth-id-type",
+			envVars: map[string]string{
+				"CLOUDNS_AUTH_ID":       "123",
+				"CLOUDNS_AUTH_ID_TYPE":  "something",
+				"CLOUDNS_AUTH_PASSWORD": "456",
+			},
+			expected: "ClouDNS auth id type is not valid. Expected one of 'auth-id' or 'sub-auth-id' but was: 'something'",
 		},
 	}
 
