@@ -2,6 +2,8 @@
 
 A Cert-Manager DNS01 provider for ClouDNS.
 
+> :warning: **Out of date**: This version has not been updated for up-to-date versions of Kubernetes and cert-manager. Please check out [this fork](https://github.com/mschirrmeister/cert-manager-webhook-cloudns) instead.
+
 ## Configuration
 
 Cert-Manager expects DNS01 providers to parse configuration from incoming webhook requests.
