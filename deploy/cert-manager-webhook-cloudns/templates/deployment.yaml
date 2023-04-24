@@ -34,6 +34,8 @@ spec:
               value: {{.Values.clouDNS.credentialsDir | printf "%s/auth_id" | quote}}
             - name: CLOUDNS_AUTH_PASSWORD_FILE
               value: {{.Values.clouDNS.credentialsDir | printf "%s/auth_password" | quote}}
+            - name: CLOUDNS_AUTH_ID_TYPE
+              value: {{ .Values.clouDNS.authIdType }}
           ports:
             - name: https
               containerPort: 443

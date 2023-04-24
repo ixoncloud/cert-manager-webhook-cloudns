@@ -20,7 +20,7 @@ if [[ "$goos" == "unknown" ]]; then
   exit 1
 fi
 
-tmp_root=./_out
+tmp_root=./.out
 kb_root_dir=$tmp_root/kubebuilder
 
 # Turn colors in this script off by setting the NO_COLOR variable in your

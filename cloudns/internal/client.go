@@ -42,7 +42,7 @@ type TXTRecord struct {
 type TXTRecords map[string]TXTRecord
 
 // NewClient creates a ClouDNS client
-func NewClient(authID string, authPassword string) (*Client, error) {
+func NewClient(authID string, authIDType string, authPassword string) (*Client, error) {
 	if authID == "" {
 		return nil, fmt.Errorf("credentials missing: authID")
 	}
@@ -58,6 +58,7 @@ func NewClient(authID string, authPassword string) (*Client, error) {
 
 	return &Client{
 		authID:       authID,
+		authIDType:   authIDType,
 		authPassword: authPassword,
 		HTTPClient:   &http.Client{},
 		BaseURL:      baseURL,
@@ -66,6 +67,7 @@ func NewClient(authID string, authPassword string) (*Client, error) {
 
 // Client ClouDNS client
 type Client struct {
+	authIDType   string
 	authID       string
 	authPassword string
 	HTTPClient   *http.Client
@@ -235,7 +237,7 @@ func (c *Client) doRequest(method string, url *url.URL) (json.RawMessage, error)
 
 func (c *Client) buildRequest(method string, url *url.URL) (*http.Request, error) {
 	q := url.Query()
-	q.Add("auth-id", c.authID)
+	q.Add(c.authIDType, c.authID)
 	q.Add("auth-password", c.authPassword)
 	url.RawQuery = q.Encode()
 
